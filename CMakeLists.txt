@@ -11,3 +11,6 @@ target_link_libraries(implicit_functions PRIVATE nlohmann_json::nlohmann_json Ei
 target_compile_features(implicit_functions PRIVATE cxx_std_17)
 
 target_include_directories(implicit_functions PUBLIC .)
+
+add_library(implicit_functions::implicit_functions ALIAS
+    implicit_functions)
