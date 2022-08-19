@@ -130,8 +130,3 @@ inline double compute_circle_distance(const std::array<double,3>& center,
         return -sqrt(radius * (radius - 2 * vec_perp_norm) + compute_dot(vec, vec));
     }
 }
-
-inline int sign(double x)
-{
-    return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
-}
