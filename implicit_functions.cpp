@@ -128,6 +128,11 @@ bool load_functions(const std::string& filename,
                 funcVals(i, j) = compute_cone_distance(apex, axis_unit_vector, apex_angle, pts[i]);
             }
         }
+        else if (type == "customized") {
+            for (int i = 0; i < n_pts; i++) {
+                funcVals(i, j) = data[j]["value"][i].get<double>();
+            }
+        }
         else if (type == "zero") {
             for (int i = 0; i < n_pts; i++) {
                 funcVals(i, j) = 0;
