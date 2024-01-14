@@ -5,6 +5,113 @@
 #include <fstream>
 #include <iostream>
 
+bool import_xyz(const std::string &filename, std::vector<Eigen::Vector3d> &pts) {
+
+    std::ifstream reader(filename.data(), std::ofstream::in);
+
+    if (!reader.good()) {
+        std::cout << "Can not open the file " << filename << std::endl;
+        return false;
+    }else {
+        std::cout << "Reading: "<<filename<< std::endl;
+    }
+
+    // first number: dimension (2 or 3)
+    int dim;
+    reader >> dim;
+    // read point coordinates
+    if (dim != 3) {
+        std::cout << "Can't handle non-3D points." << std::endl;
+        reader.close();
+        return false;
+    }
+    pts.clear();
+    double x,y,z;
+    while ((reader >> x >> y >> z)) {
+        pts.emplace_back(x,y,z);
+    }
+
+    reader.close();
+    return true;
+}
+
+bool import_RBF_coeff(const std::string &filename, Eigen::VectorXd &a, Eigen::Vector4d &b) {
+    std::ifstream reader(filename.data(), std::ofstream::in);
+    if (!reader.good()) {
+        std::cout << "Can not open the file " << filename << std::endl;
+        return false;
+    }else {
+        std::cout << "Reading: "<<filename<< std::endl;
+    }
+
+    // first line: coefficient a
+    std::string line;
+    std::getline(reader, line);
+    std::istringstream iss(line);
+    double val;
+    std::vector<double> tmp_a;
+    while (iss >> val) tmp_a.push_back(val);
+    a.resize(tmp_a.size());
+    for (size_t i = 0; i < tmp_a.size(); ++i) {
+        a(i) = tmp_a[i];
+    }
+
+    // second line: coefficient b (d,c0,c1,c2)
+    std::getline(reader, line);
+    std::istringstream iss2(line);
+    double d,c0,c1,c2;
+    if (!(iss2 >> d >> c0 >> c1 >> c2)) {
+        std::cout << "coeff_b should have 4 elements (in 3D)." << std::endl;
+        reader.close();
+        return false;
+    }
+    b << d, c0, c1, c2;
+
+    reader.close();
+    return true;
+}
+
+bool import_Hermite_RBF(const std::string &pts_file, const std::string &coeff_file, std::vector<Eigen::Vector3d> &control_pts,
+                        Eigen::VectorXd &coeff_a, Eigen::Vector4d &coeff_b)
+{
+    // import control points
+    bool succeed = import_xyz(pts_file, control_pts);
+    if (!succeed) {
+        std::cout << "Fail to import RBF control points." << std::endl;
+        return false;
+    }
+
+    // import RBF coefficients
+    succeed = import_RBF_coeff(coeff_file, coeff_a, coeff_b);
+    if (!succeed) {
+        std::cout << "Fail to import RBF coefficients." << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+std::unique_ptr<ImplicitFunction<double>> load_Hermite_RBF(const nlohmann::json& entry,
+                                                   const std::string& path_name) {
+    assert(entry.contains("points"));
+    auto point_file = path_name + entry["points"].get<std::string>();
+    assert(entry.contains("rbf_coeffs"));
+    auto coeff_file = path_name + entry["rbf_coeffs"].get<std::string>();
+
+    std::vector<Eigen::Vector3d> control_pts;
+    Eigen::VectorXd coeff_a;
+    Eigen::Vector4d coeff_b;
+
+    if (import_Hermite_RBF(point_file, coeff_file, control_pts, coeff_a, coeff_b)) {
+        auto fn = std::make_unique<Hermite_RBF<double>>(control_pts, coeff_a, coeff_b);
+        return fn;
+    }
+    else {
+        std::cout << "Failed to load Hermite RBF function!" << std::endl;
+        return nullptr;
+    }
+}
+
 bool load_functions(const std::string &filename,
                     const std::vector<std::array<double, 3>> &pts,
                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &funcVals)
@@ -19,6 +126,10 @@ bool load_functions(const std::string &filename,
     json data;
     fin >> data;
     fin.close();
+    // compatible with Boundary Sample Halfspaces (BSH) config files
+    if (data.contains("input")) {
+        data = data["input"];
+    }
     //
     auto n_pts = static_cast<Eigen::Index>(pts.size());
     auto n_func = static_cast<Eigen::Index>(data.size());
@@ -202,6 +313,15 @@ bool load_functions(const std::string &filename,
             for (int i = 0; i < n_pts; i++)
             {
                 funcVals(i, j) = 0;
+            }
+        }
+        else if (type == "rbf") {
+            auto pos = filename.find_last_of("/\\");
+            auto path_name = filename.substr(0, pos + 1);
+            auto rbf = load_Hermite_RBF(data[j], path_name);
+            for (int i = 0; i < n_pts; i++)
+            {
+                funcVals(i, j) = rbf->evaluate(pts[i][0], pts[i][1], pts[i][2]);
             }
         }
         else
@@ -395,6 +515,11 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
         else if (type == "zero")
         {
             functions[j] = std::make_unique<ConstantFunction<double>>(0);
+        }
+        else if (type == "rbf") {
+            auto pos = filename.find_last_of("/\\");
+            auto path_name = filename.substr(0, pos + 1);
+            functions[j] = load_Hermite_RBF(data[j], path_name);
         }
         else
         {
