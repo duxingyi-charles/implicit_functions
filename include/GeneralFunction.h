@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImplicitFunction.h"
+#include <functional>
 
 template <typename Scalar>
 class GeneralFunction : public ImplicitFunction<Scalar>
