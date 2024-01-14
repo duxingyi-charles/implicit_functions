@@ -5,7 +5,7 @@
 #include "ImplicitFunction.h"
 #include "GeneralFunction.h"
 #include "primitives.h"
-//#include "Hermite_RBF.h"
+#include "Hermite_RBF.h"
 
 bool load_functions(const std::string &filename,
                     const std::vector<std::array<double, 3>> &pts,
