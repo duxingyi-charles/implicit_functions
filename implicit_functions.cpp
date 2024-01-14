@@ -66,21 +66,50 @@ bool load_functions(const std::string &filename,
         else if (type == "cylinder")
         {
             std::array<double, 3> axis_point;
-            for (int i = 0; i < 3; ++i)
-            {
-                axis_point[i] = data[j]["axis_point"][i].get<double>();
-            }
             std::array<double, 3> axis_unit_vector;
-            for (int i = 0; i < 3; ++i)
+            // if data has 'axis_point1' and 'axis_point2', then use them to define the axis
+            if (data[j].contains("axis_point1") && data[j].contains("axis_point2"))
             {
-                axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point[i] = data[j]["axis_point1"][i].get<double>();
+                }
+                std::array<double, 3> axis_point2;
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point2[i] = data[j]["axis_point2"][i].get<double>();
+                }
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_unit_vector[i] = axis_point2[i] - axis_point[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point[i] = data[j]["axis_point"][i].get<double>();
+                }
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
+                }
             }
             double radius = data[j]["radius"].get<double>();
+            bool squared = false;
+            if (data[j].contains("squared"))
+            {
+                squared = data[j]["squared"].get<bool>();
+            }
             //
-            CylinderDistanceFunction<double> cylinder(axis_point, axis_unit_vector, radius);
+            std::unique_ptr<ImplicitFunction<double>> cylinder;
+            if (squared)
+                cylinder = std::make_unique<CylinderSquaredDistanceFunction<double>>(axis_point, axis_unit_vector, radius);
+            else
+                cylinder = std::make_unique<CylinderDistanceFunction<double>>(axis_point, axis_unit_vector, radius);
             for (int i = 0; i < n_pts; i++)
             {
-                funcVals(i, j) = cylinder.evaluate(pts[i][0], pts[i][1], pts[i][2]);
+                funcVals(i, j) = cylinder->evaluate(pts[i][0], pts[i][1], pts[i][2]);
             }
         }
         else if (type == "sphere")
@@ -242,18 +271,38 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
         else if (type == "cylinder")
         {
             std::array<double, 3> axis_point;
-            for (int i = 0; i < 3; ++i)
-            {
-                axis_point[i] = data[j]["axis_point"][i].get<double>();
-            }
             std::array<double, 3> axis_unit_vector;
-            for (int i = 0; i < 3; ++i)
+            // if data has 'axis_point1' and 'axis_point2', then use them to define the axis
+            if (data[j].contains("axis_point1") && data[j].contains("axis_point2"))
             {
-                axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point[i] = data[j]["axis_point1"][i].get<double>();
+                }
+                std::array<double, 3> axis_point2;
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point2[i] = data[j]["axis_point2"][i].get<double>();
+                }
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_unit_vector[i] = axis_point2[i] - axis_point[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_point[i] = data[j]["axis_point"][i].get<double>();
+                }
+                for (int i = 0; i < 3; ++i)
+                {
+                    axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
+                }
             }
             double radius = data[j]["radius"].get<double>();
             bool squared = false;
-            if (data[j].find("squared") != data[j].end())
+            if (data[j].contains("squared"))
             {
                 squared = data[j]["squared"].get<bool>();
             }
