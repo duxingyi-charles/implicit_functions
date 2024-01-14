@@ -20,8 +20,8 @@ bool load_functions(const std::string &filename,
     fin >> data;
     fin.close();
     //
-    size_t n_pts = pts.size();
-    size_t n_func = data.size();
+    auto n_pts = static_cast<Eigen::Index>(pts.size());
+    auto n_func = static_cast<Eigen::Index>(data.size());
     funcVals.resize(n_pts, n_func);
     for (int j = 0; j < n_func; ++j)
     {
