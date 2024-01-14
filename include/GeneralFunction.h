@@ -7,7 +7,7 @@ template <typename Scalar>
 class GeneralFunction : public ImplicitFunction<Scalar>
 {
 public:
-    GeneralFunction(
+    explicit GeneralFunction(
         std::function<Scalar(Scalar, Scalar, Scalar, Scalar &, Scalar &, Scalar &)> func_grad) : func_grad_(func_grad) {}
 
     Scalar evaluate(Scalar x, Scalar y, Scalar z) const override

@@ -8,7 +8,7 @@ template <typename Scalar>
 class ConstantFunction : public ImplicitFunction<Scalar>
 {
 public:
-    ConstantFunction(Scalar value) : value_(value) {}
+    explicit ConstantFunction(Scalar value) : value_(value) {}
     Scalar evaluate(Scalar x, Scalar y, Scalar z) const override { return value_; }
     Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override
     {

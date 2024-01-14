@@ -25,10 +25,10 @@ bool load_functions(const std::string &filename,
     funcVals.resize(n_pts, n_func);
     for (int j = 0; j < n_func; ++j)
     {
-        std::string type = data[j]["type"].get<std::string>();
+        auto type = data[j]["type"].get<std::string>();
         if (type == "plane")
         {
-            std::array<double, 3> point;
+            std::array<double, 3> point{};
             for (int i = 0; i < 3; ++i)
             {
                 point[i] = data[j]["point"][i].get<double>();
@@ -96,7 +96,7 @@ bool load_functions(const std::string &filename,
                     axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
                 }
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             bool squared = false;
             if (data[j].contains("squared"))
             {
@@ -120,7 +120,7 @@ bool load_functions(const std::string &filename,
             {
                 center[i] = data[j]["center"][i].get<double>();
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             //
             std::unique_ptr<ImplicitFunction<double>> sphere;
             if (radius >= 0)
@@ -148,8 +148,8 @@ bool load_functions(const std::string &filename,
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double major_radius = data[j]["major_radius"].get<double>();
-            double minor_radius = data[j]["minor_radius"].get<double>();
+            auto major_radius = data[j]["major_radius"].get<double>();
+            auto minor_radius = data[j]["minor_radius"].get<double>();
             //
             TorusDistanceFunction<double> torus(center, axis_unit_vector, major_radius, minor_radius);
             for (int i = 0; i < n_pts; i++)
@@ -169,7 +169,7 @@ bool load_functions(const std::string &filename,
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             //
             TorusDistanceFunction<double> circle(center, axis_unit_vector, radius, 0);
             for (int i = 0; i < n_pts; i++)
@@ -189,7 +189,7 @@ bool load_functions(const std::string &filename,
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double apex_angle = data[j]["apex_angle"].get<double>();
+            auto apex_angle = data[j]["apex_angle"].get<double>();
             //
             ConeDistanceFunction<double> cone(apex, axis_unit_vector, apex_angle);
             for (int i = 0; i < n_pts; i++)
@@ -230,7 +230,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
     functions.resize(n_func);
     for (int j = 0; j < n_func; ++j)
     {
-        std::string type = data[j]["type"].get<std::string>();
+        auto type = data[j]["type"].get<std::string>();
         if (type == "plane")
         {
             std::array<double, 3> point;
@@ -301,7 +301,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
                     axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
                 }
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             bool squared = false;
             if (data[j].contains("squared"))
             {
@@ -320,7 +320,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             {
                 center[i] = data[j]["center"][i].get<double>();
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             bool squared = false;
             if (data[j].find("squared") != data[j].end())
             {
@@ -355,8 +355,8 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double major_radius = data[j]["major_radius"].get<double>();
-            double minor_radius = data[j]["minor_radius"].get<double>();
+            auto major_radius = data[j]["major_radius"].get<double>();
+            auto minor_radius = data[j]["minor_radius"].get<double>();
             //
             functions[j] = std::make_unique<TorusDistanceFunction<double>>(center, axis_unit_vector, major_radius, minor_radius);
         }
@@ -372,7 +372,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double radius = data[j]["radius"].get<double>();
+            auto radius = data[j]["radius"].get<double>();
             //
             functions[j] = std::make_unique<TorusDistanceFunction<double>>(center, axis_unit_vector, radius, 0);
         }
@@ -388,7 +388,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             {
                 axis_unit_vector[i] = data[j]["axis_vector"][i].get<double>();
             }
-            double apex_angle = data[j]["apex_angle"].get<double>();
+            auto apex_angle = data[j]["apex_angle"].get<double>();
             //
             functions[j] = std::make_unique<ConeDistanceFunction<double>>(apex, axis_unit_vector, apex_angle);
         }
