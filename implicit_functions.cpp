@@ -396,7 +396,7 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             };
             functions[j] = std::make_unique<GeneralFunction<double>>(f);
         }
-        else if (type == "teardrop")
+        else if (type == "teardrop_shifted")
         {
             FuncGrad f = [](double x, double y, double z,
                             double &gx, double &gy, double &gz)
@@ -409,6 +409,20 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
                 gy = 3.19467 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 3) +
                 7.98667 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 4) -
                 7.96003 * (-0.5 - 0.0998334 * x + 0.995004 * y);
+                gz = -8 * (-0.5 + z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "teardrop")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = 0.5 * std::pow(2 * (x - 0.5), 5) +
+                0.5 * std::pow(2 * (x - 0.5), 4) - std::pow((2 * (y - 0.5)), 2) - std::pow(2 * (z - 0.5), 2);
+                gx = 32 * std::pow(-0.5 + x, 3) + 80 * std::pow(-0.5 + x, 4);
+                gy = -8 * (-0.5 + y);
                 gz = -8 * (-0.5 + z);
                 return val;
             };
