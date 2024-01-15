@@ -345,6 +345,10 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
     json data;
     fin >> data;
     fin.close();
+    // compatible with Boundary Sample Halfspaces (BSH) config files
+    if (data.contains("input")) {
+        data = data["input"];
+    }
     //
     size_t n_func = data.size();
     functions.resize(n_func);
