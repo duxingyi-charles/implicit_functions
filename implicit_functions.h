@@ -160,7 +160,7 @@ public:
         gx = -2 * vec_perp[0];
         gy = -2 * vec_perp[1];
         gz = -2 * vec_perp[2];
-        return -(radius_ * radius_ - compute_squared_norm(vec_perp));
+        return radius_ * radius_ - compute_squared_norm(vec_perp);
     }
 
 private:
