@@ -99,7 +99,7 @@ public:
         Scalar d = compute_dot(axis_unit_vector_, vec);
         std::array<Scalar, 3> vec_para{d * axis_unit_vector_[0], d * axis_unit_vector_[1], d * axis_unit_vector_[2]};
         std::array<Scalar, 3> vec_perp{vec[0] - vec_para[0], vec[1] - vec_para[1], vec[2] - vec_para[2]};
-        return -(radius_ - compute_norm(vec_perp));
+        return radius_ - compute_norm(vec_perp);
     }
 
     Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override
@@ -118,10 +118,10 @@ public:
         }
         else
         {
-            gx = -(-vec_perp[0] / vec_perp_norm);
-            gy = -(-vec_perp[1] / vec_perp_norm);
-            gz = -(-vec_perp[2] / vec_perp_norm);
-            return -(radius_ - vec_perp_norm);
+            gx = -vec_perp[0] / vec_perp_norm;
+            gy = -vec_perp[1] / vec_perp_norm;
+            gz = -vec_perp[2] / vec_perp_norm;
+            return radius_ - vec_perp_norm;
         }
     }
 
@@ -148,7 +148,7 @@ public:
         Scalar d = compute_dot(axis_unit_vector_, vec);
         std::array<Scalar, 3> vec_para{d * axis_unit_vector_[0], d * axis_unit_vector_[1], d * axis_unit_vector_[2]};
         std::array<Scalar, 3> vec_perp{vec[0] - vec_para[0], vec[1] - vec_para[1], vec[2] - vec_para[2]};
-        return -(radius_ * radius_ - compute_squared_norm(vec_perp));
+        return radius_ * radius_ - compute_squared_norm(vec_perp);
     }
 
     Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override
@@ -157,9 +157,9 @@ public:
         Scalar d = compute_dot(axis_unit_vector_, vec);
         std::array<Scalar, 3> vec_para{d * axis_unit_vector_[0], d * axis_unit_vector_[1], d * axis_unit_vector_[2]};
         std::array<Scalar, 3> vec_perp{vec[0] - vec_para[0], vec[1] - vec_para[1], vec[2] - vec_para[2]};
-        gx = -(-2 * vec_perp[0]);
-        gy = -(-2 * vec_perp[1]);
-        gz = -(-2 * vec_perp[2]);
+        gx = -2 * vec_perp[0];
+        gy = -2 * vec_perp[1];
+        gz = -2 * vec_perp[2];
         return -(radius_ * radius_ - compute_squared_norm(vec_perp));
     }
 
