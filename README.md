@@ -1,1 +1,1 @@
-You can find the list of supported primitives, including spheres, cylinders, cones, etc., in the `examples/primitives.json` file.
+Added in an customized shape type: define the value of function j on point i using a customized value. 

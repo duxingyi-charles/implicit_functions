@@ -4,6 +4,9 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <iostream>
+#include <cmath>
+
+typedef std::function<double(double, double, double, double &, double &, double &)> FuncGrad;
 
 bool import_xyz(const std::string &filename, std::vector<Eigen::Vector3d> &pts) {
 
@@ -324,15 +327,6 @@ bool load_functions(const std::string &filename,
                 funcVals(i, j) = rbf->evaluate(pts[i][0], pts[i][1], pts[i][2]);
             }
         }
-        else if (type == "shader") {
-            auto name = data[j]["name"].get<std::string>();
-            auto delta = data[j]["delta"].get<float>();
-            ImplicitShader<float> shader(name, delta);
-            for (int i = 0; i < n_pts; i++)
-            {
-                funcVals(i, j) = shader.evaluate(pts[i][0], pts[i][1], pts[i][2]);
-            }
-        }
         else
         {
             std::cout << "undefined type: " << type << std::endl;
@@ -525,6 +519,107 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             //
             functions[j] = std::make_unique<ConeDistanceFunction<double>>(apex, axis_unit_vector, apex_angle);
         }
+        else if (type == "wave")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = 2 - 4 * z + 0.3333333333333333 * (sin(15.343274134071653 - 9.21125890435288 * x - 18.2340614919869 * y) + sin(4.801594243303487 + 7.985828093490334 * x - 10.314294288432725 * y) - sin(6.54696301939958 - 18.46419127184428 * x - 1.2648908198491549 * y));
+                gx = -3.070419634784293 * cos(15.343274134071653 - 9.21125890435288 * x -
+                                              18.2340614919869 * y) +
+                2.6619426978301113 *
+                cos(4.801594243303487 + 7.985828093490334 * x - 10.314294288432725 * y) +
+                6.154730423948093 * cos(6.54696301939958 - 18.46419127184428 * x - 1.2648908198491549 * y);
+                gy = -6.078020497328966 * cos(15.343274134071653 - 9.21125890435288 * x - 18.2340614919869 * y) -
+                3.4380980961442416 * cos(4.801594243303487 + 7.985828093490334 * x -
+                                         10.314294288432725 * y) +
+                0.4216302732830516 *
+                cos(6.54696301939958 - 18.46419127184428 * x - 1.2648908198491549 * y);
+                gz = -4;
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "Gaussian")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double e_power = exp(-21.3333 * std::pow(x, 2) - 21.3333 * std::pow(y, 2) + (-7.10543*std::pow(10,-15) - 21.3333 * z) * z + y * (-7.10543*std::pow(10,-15) + 21.3333 * z) + x * (-7.10543*std::pow(10,-15) + 21.3333 * y + 21.3333 * z));
+                double val = 3.4641 + 2 * e_power - 2.3094 * x - 2.3094 * y - 2.3094 * z;
+                gx = -2.3094 + e_power *  (-1.42109* std::pow(10, -14) - 85.3333 * x + 42.6667 * y + 42.6667 * z);
+                gy = -2.3094 + e_power *  (-1.42109* std::pow(10, -14) + 42.6667 * x - 85.3333 * y + 42.6667 * z);
+                gz = -2.3094 + e_power *  (-1.42109* std::pow(10, -14) + 42.6667 * x + 42.6667 * y - 85.3333 * z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "smile")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = std::pow((2 * (y - 0.51)) - std::pow( 2* (x - 0.51), 2) - std::pow(2 *(y - 0.51), 2) + 1, 4)
+                +std::pow(std::pow(2 * (x - 0.51), 2) + std::pow( 2* (y - 0.51), 2) + std::pow(2 *(z - 0.51), 2), 4) - 1;
+                gx = -32 * (-0.51 + x)*std::pow(1 - 4 * std::pow((-0.51 + x), 2) + 2*(-0.51 + y) - 4*std::pow(-0.51 + y, 2), 3)
+                +32 * (-0.51 + x) * std::pow(4 * std::pow(-0.51 + x, 2) + 4 * std::pow(-0.51 + y, 2) + 4 * std::pow(-0.51 + z, 2), 3);
+                gy = 4 * (2 - 8 * (-0.51 + y)) * std::pow(1 - 4 * std::pow(-0.51 + x, 2) + 2 * (-0.51 + y) - 4 * std::pow(-0.51 + y, 2), 3)
+                + 32 * (-0.51 + y) * std::pow(4 * std::pow(-0.51 + x, 2) + 4 * std::pow(-0.51 + y, 2) + 4 * std::pow(-0.51 + z, 2), 3);
+                gz = 32 * std::pow(4 * std::pow(-0.51 + x, 2) + 4 * std::pow(-0.51 + y, 2) + 4 * std::pow(-0.51 + z, 2), 3) * (-0.51 + z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "teardrop_shifted")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = 16 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 5) +
+                8* std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 4) - 4 * std::pow(-0.5 - 0.0998334 * x + 0.995004 * y, 2) - std::pow(2 * (z - 0.5), 2);
+                gx = 31.8401 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 3) +
+                79.6003 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 4) +
+                0.798667 * (-0.5 - 0.0998334 * x + 0.995004 * y);
+                gy = 3.19467 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 3) +
+                7.98667 * std::pow(-0.6 + 0.995004 * x + 0.0998334 * y, 4) -
+                7.96003 * (-0.5 - 0.0998334 * x + 0.995004 * y);
+                gz = -8 * (-0.5 + z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "teardrop")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = 0.5 * std::pow(2 * (x - 0.5), 5) +
+                0.5 * std::pow(2 * (x - 0.5), 4) - std::pow((2 * (y - 0.5)), 2) - std::pow(2 * (z - 0.5), 2);
+                gx = 32 * std::pow(-0.5 + x, 3) + 80 * std::pow(-0.5 + x, 4);
+                gy = -8 * (-0.5 + y);
+                gz = -8 * (-0.5 + z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
+        else if (type == "cyclide")
+        {
+            FuncGrad f = [](double x, double y, double z,
+                            double &gx, double &gy, double &gz)
+            {
+                double val = 8816 - 208 * (4 + 900 * std::pow(-0.5 + x, 2)) + 7200 * (-0.5 + x) -
+                19200 * (9 * std::pow(-0.5 + y, 2) - 9 * std::pow(-0.5 + z, 2)) +
+                10000 * std::pow(9 * std::pow(-0.5 + x, 2) + 9 * std::pow(-0.5 + y, 2) + 9 * std::pow(-0.5 + z, 2), 2);
+                gx = 7200 - 374400 * (-0.5 + x) +
+                360000 * (-0.5 + x) * (9 * std::pow(-0.5 + x, 2) + 9 * std::pow(-0.5 + y, 2) + 9 * std::pow(-0.5 + z, 2));
+                gy = -345600 * (-0.5 + y) +
+                360000 * (-0.5 + y) * (9 * std::pow(-0.5 + x, 2) + 9 * std::pow(-0.5 + y, 2) + 9 * std::pow(-0.5 + z, 2));
+                gz = 345600 * (-0.5 + z) +
+                360000 * (9 * std::pow(-0.5 + x, 2) + 9 * std::pow(-0.5 + y, 2) + 9 * std::pow(-0.5 + z, 2)) * (-0.5 + z);
+                return val;
+            };
+            functions[j] = std::make_unique<GeneralFunction<double>>(f);
+        }
         else if (type == "zero")
         {
             functions[j] = std::make_unique<ConstantFunction<double>>(0);
@@ -533,11 +628,6 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             auto pos = filename.find_last_of("/\\");
             auto path_name = filename.substr(0, pos + 1);
             functions[j] = load_Hermite_RBF(data[j], path_name);
-        }
-        else if (type == "shader") {
-            auto name = data[j]["name"].get<std::string>();
-            auto delta = data[j]["delta"].get<double>();
-            functions[j] = std::make_unique<ImplicitShader<double>>(name, delta);
         }
         else
         {
