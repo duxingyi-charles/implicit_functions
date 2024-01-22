@@ -1,0 +1,101 @@
+[
+	{
+		"type":"sphere",
+		"center":[
+			0.5,
+			0.5,
+			0.5
+		],
+		"radius":0.2,
+		"squared": true
+	},
+	{
+		"type": "plane",
+		"point": [
+			0,
+			0,
+			0
+		],
+		"normal": [
+			0,
+			0,
+			1
+		]
+	},
+	{
+		"type": "line",
+		"point": [
+			0,
+			0,
+			0
+		],
+		"unit_vector":
+		[
+			0,
+			0,
+			1
+		],
+		"squared": true
+	},
+	{
+		"type": "cylinder",
+		"axis_point": [
+			0,
+			0,
+			0
+		],
+		"axis_vector": [
+			0,
+			0,
+			1
+		],
+		"radius": 0.2,
+		"squared": true
+	},
+	{
+		"type": "torus",
+		"center": [
+			0,
+			0,
+			0
+		],
+		"axis_vector": [
+			0,
+			0,
+			1
+		],
+		"major_radius": 0.2,
+		"minor_radius": 0.1
+	},
+	{
+		"type": "circle",
+		"center": [
+			0,
+			0,
+			0
+		],
+		"axis_vector": [
+			0,
+			0,
+			1
+		],
+		"radius": 0.2
+	},
+	{
+		"type": "cone",
+		"apex": [
+			0,
+			0,
+			0
+		],
+		"axis_vector": [
+			0,
+			0,
+			1
+		],
+		"apex_angle": 0.5
+	},
+	{
+		"type": "zero"
+	}
+]
