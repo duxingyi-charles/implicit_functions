@@ -1,46 +1,14 @@
 #pragma once
 
-#include <string>
-#include <array>
-#include <Eigen/Core>
+#include "ImplicitFunction.h"
 #include "vector_math.h"
 
-template <typename Scalar>
-class ImplicitFunction
-{
-public:
-    virtual Scalar evaluate(Scalar x, Scalar y, Scalar z) const = 0;
-    virtual Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const = 0;
-    virtual ~ImplicitFunction() {}
-};
-
-template <typename Scalar>
-class GeneralFunction : public ImplicitFunction<Scalar>
-{
-public:
-    GeneralFunction(
-        std::function<Scalar(Scalar, Scalar, Scalar, Scalar &, Scalar &, Scalar &)> func_grad) : func_grad_(func_grad) {}
-
-    Scalar evaluate(Scalar x, Scalar y, Scalar z) const override
-    {
-        Scalar gx, gy, gz;
-        return func_grad_(x, y, z, gx, gy, gz);
-    }
-
-    Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override
-    {
-        return func_grad_(x, y, z, gx, gy, gz);
-    }
-
-private:
-    std::function<Scalar(Scalar, Scalar, Scalar, Scalar &, Scalar &, Scalar &)> func_grad_;
-};
 
 template <typename Scalar>
 class ConstantFunction : public ImplicitFunction<Scalar>
 {
 public:
-    ConstantFunction(Scalar value) : value_(value) {}
+    explicit ConstantFunction(Scalar value) : value_(value) {}
     Scalar evaluate(Scalar x, Scalar y, Scalar z) const override { return value_; }
     Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override
     {
@@ -387,9 +355,3 @@ private:
     Scalar major_radius_;
     Scalar minor_radius_;
 };
-
-bool load_functions(const std::string &filename,
-                    const std::vector<std::array<double, 3>> &pts,
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &funcVals);
-
-bool load_functions(const std::string &filename, std::vector<std::unique_ptr<ImplicitFunction<double>>> &functions);
