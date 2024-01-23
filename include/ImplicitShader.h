@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <type_traits>
+#include <array>
 
 template <typename Scalar>
 class ImplicitShader : public ImplicitFunction<Scalar> {
@@ -16,11 +17,11 @@ public:
     }
 
     [[nodiscard]] Scalar evaluate(Scalar x, Scalar y, Scalar z) const override {
-        std::vector<Scalar> buffer{x, y, z, 0};
+        std::array<Scalar, 4> buffer{x, y, z, 0};
         if constexpr (std::is_same<Scalar, float>::value) {
             func_app_.onCompute(buffer);
         } else {
-            std::vector<float> buffer_float(4);
+            std::array<float, 4> buffer_float;
             for (int i = 0; i < 4; ++i) {
                 buffer_float[i] = static_cast<float>(buffer[i]);
             }
@@ -31,7 +32,7 @@ public:
     }
 
     Scalar evaluate_gradient(Scalar x, Scalar y, Scalar z, Scalar &gx, Scalar &gy, Scalar &gz) const override {
-        std::vector<Scalar> buffer{x, y, z, 0,
+        std::array<Scalar, 28> buffer{x, y, z, 0,
                                   x - delta_, y, z, 0,
                                   x + delta_, y, z, 0,
                                   x, y - delta_, z, 0,
@@ -41,7 +42,7 @@ public:
         if constexpr (std::is_same<Scalar, float>::value) {
             func_grad_app_.onCompute(buffer);
         } else {
-            std::vector<float> buffer_float(28);
+            std::array<float, 28> buffer_float;
             for (int i = 0; i < 28; ++i) {
                 buffer_float[i] = static_cast<float>(buffer[i]);
             }
