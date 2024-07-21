@@ -1,5 +1,7 @@
 #pragma once
 
+#if IMPLICIT_FUNCTIONS_WITH_SHADER_SUPPORT
+
 #include "ImplicitFunction.h"
 #include <implicit_shader/Application.h>
 
@@ -69,3 +71,5 @@ private:
     // delta used for finite difference
     Scalar delta_;
 };
+
+#endif
