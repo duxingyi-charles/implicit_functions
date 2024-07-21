@@ -324,6 +324,7 @@ bool load_functions(const std::string &filename,
                 funcVals(i, j) = rbf->evaluate(pts[i][0], pts[i][1], pts[i][2]);
             }
         }
+#if IMPLICIT_FUNCTIONS_WITH_SHADER_SUPPORT
         else if (type == "shader") {
             auto name = data[j]["name"].get<std::string>();
             auto delta = data[j]["delta"].get<float>();
@@ -333,6 +334,7 @@ bool load_functions(const std::string &filename,
                 funcVals(i, j) = shader.evaluate(pts[i][0], pts[i][1], pts[i][2]);
             }
         }
+#endif
         else
         {
             std::cout << "undefined type: " << type << std::endl;
@@ -534,11 +536,13 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
             auto path_name = filename.substr(0, pos + 1);
             functions[j] = load_Hermite_RBF(data[j], path_name);
         }
+#if IMPLICIT_FUNCTIONS_WITH_SHADER_SUPPORT
         else if (type == "shader") {
             auto name = data[j]["name"].get<std::string>();
             auto delta = data[j]["delta"].get<double>();
             functions[j] = std::make_unique<ImplicitShader<double>>(name, delta);
         }
+#endif
         else
         {
             std::cout << "undefined type: " << type << std::endl;
