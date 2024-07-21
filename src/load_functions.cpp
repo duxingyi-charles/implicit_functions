@@ -538,9 +538,11 @@ bool load_functions(const std::string &filename, std::vector<std::unique_ptr<Imp
         }
 #if IMPLICIT_FUNCTIONS_WITH_SHADER_SUPPORT
         else if (type == "shader") {
-            auto name = data[j]["name"].get<std::string>();
+            auto pos = filename.find_last_of("/\\");
+            auto path_name = filename.substr(0, pos + 1);
+            auto shader_file = path_name + data[j]["shader"].get<std::string>();
             auto delta = data[j]["delta"].get<double>();
-            functions[j] = std::make_unique<ImplicitShader<double>>(name, delta);
+            functions[j] = std::make_unique<ImplicitShader<double>>(shader_file, delta);
         }
 #endif
         else
