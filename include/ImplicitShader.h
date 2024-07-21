@@ -12,10 +12,10 @@
 template <typename Scalar>
 class ImplicitShader : public ImplicitFunction<Scalar> {
 public:
-    ImplicitShader(std::string name, Scalar delta) : name_(std::move(name)), delta_(delta),
+    ImplicitShader(std::string shader_file, Scalar delta) : delta_(delta),
                                                            func_app_(), func_grad_app_() {
-        func_app_.onInit(SHADER_DIR "/" + name_ + ".wgsl", 1);
-        func_grad_app_.onInit(SHADER_DIR "/" + name_ + ".wgsl", 7);
+        func_app_.onInit(shader_file, 1);
+        func_grad_app_.onInit(shader_file, 7);
     }
 
     [[nodiscard]] Scalar evaluate(Scalar x, Scalar y, Scalar z) const override {
@@ -67,7 +67,6 @@ public:
 private:
     mutable implicit_shader::Application func_app_;
     mutable implicit_shader::Application func_grad_app_;
-    std::string name_;
     // delta used for finite difference
     Scalar delta_;
 };
