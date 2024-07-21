@@ -5,7 +5,7 @@ endif()
 include(FetchContent)
 FetchContent_Declare(
         implicit_shader
-        GIT_REPOSITORY git@github.com:qnzhou/implicit_shader.git
+        GIT_REPOSITORY https://github.com/qnzhou/implicit_shader.git
         GIT_TAG main
 )
 
